@@ -104,3 +104,88 @@ class TestProductModel(unittest.TestCase):
     #
     # ADD YOUR TEST CASES HERE
     #
+    def test_read_a_product(self):
+        """It should read a product from the database"""
+        product = ProductFactory()
+        app.logger.info("Product " + str(product))
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        product_from_database = Product.find(product.id)
+        self.assertEqual(product_from_database.id, product.id)
+        self.assertEqual(product_from_database.name, product.name)
+        self.assertEqual(product_from_database.description, product.description)
+        self.assertEqual(product_from_database.available, product.available)
+        self.assertEqual(product_from_database.price, product.price)
+        self.assertEqual(product_from_database.category, product.category)
+
+    def test_update_a_product(self):
+        """It should update a product"""
+        product = ProductFactory()
+        app.logger.info("Product " + str(product))
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        original_id = product.id
+        app.logger.info("Product " + str(product))
+        new_description = "Updated description of the product."
+        product.description = new_description
+        product.update()
+        product_list = Product.all()
+        self.assertEqual(len(product_list), 1)
+        self.assertEqual(product_list[0].id, original_id)
+        self.assertEqual(product_list[0].description, new_description)
+
+    def test_delete_a_product(self):
+        """It should delete a product"""
+        product = ProductFactory()
+        product.create()
+        self.assertEqual(len(Product.all()), 1)
+        product.delete()
+        self.assertEqual(len(Product.all()), 0)
+
+    def test_list_all_products(self):
+        """It should list all products"""
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+        for _ in range(5):
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        self.assertEqual(len(products), 5)
+
+    def test_find_by_name(self):
+        """It should Find a Product by Name"""
+        products = ProductFactory.create_batch(5)
+        for product in products:
+            product.create()
+        name = products[0].name
+        count = len([product for product in products if product.name == name])
+        found_products = Product.find_by_name(name)
+        self.assertEqual(found_products.count(), count)
+        for product in found_products:
+            self.assertEqual(product.name, name)
+
+    def test_find_a_product_by_availability(self):
+        """It should Find a Product by availability"""
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        availability = products[0].available
+        count = len([product for product in products if product.available == availability])
+        found_products = Product.find_by_availability(availability)
+        self.assertEqual(found_products.count(), count)
+        for product in found_products:
+            self.assertEqual(product.available, availability)
+
+    def test_find_a_product_by_category(self):
+        """It should Find a Product by category"""
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        category = products[0].category
+        count = len([product for product in products if product.category == category])
+        found_products = Product.find_by_category(category)
+        self.assertEqual(found_products.count(), count)
+        for product in found_products:
+            self.assertEqual(product.category, category)
